@@ -1,10 +1,13 @@
 param(
-  [switch]$SystemCheckOnly
+  [switch]$SystemCheckOnly,
+  [string]$InstallRoot
 )
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
-$InstallRoot = Join-Path $Root "comfyuifeddafront"
+if ([string]::IsNullOrWhiteSpace($InstallRoot)) {
+  $InstallRoot = Join-Path $Root "comfyuifeddafront"
+}
 $ComfyDir = Join-Path $InstallRoot "ComfyUI"
 $NodesDir = Join-Path $ComfyDir "custom_nodes"
 $NodesConfigPath = Join-Path $Root "config\base_nodes.json"
