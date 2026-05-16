@@ -87,13 +87,20 @@ function Show-SystemCheck {
   try { $ramGB = [math]::Round((Get-CimInstance Win32_OperatingSystem).TotalVisibleMemorySize / 1MB) } catch {}
   $drive = $null
   try {
-    if (Test-Path $InstallRoot) {
-      $drive = (Get-Item $InstallRoot).PSDrive
-    } elseif (Test-Path $Root) {
-      $drive = (Get-Item $Root).PSDrive
+    $qualifier = Split-Path -Path $InstallRoot -Qualifier
+    if (-not [string]::IsNullOrWhiteSpace($qualifier)) {
+      $driveName = $qualifier.TrimEnd('\').TrimEnd(':')
+      $drive = Get-PSDrive -Name $driveName -ErrorAction SilentlyContinue
+    }
+    if (-not $drive) {
+      $fallbackQualifier = Split-Path -Path $Root -Qualifier
+      if (-not [string]::IsNullOrWhiteSpace($fallbackQualifier)) {
+        $fallbackName = $fallbackQualifier.TrimEnd('\').TrimEnd(':')
+        $drive = Get-PSDrive -Name $fallbackName -ErrorAction SilentlyContinue
+      }
     }
   } catch {}
-  if (-not $drive) { Fail "Could not resolve install drive from path." }
+  if (-not $drive) { Fail "Could not resolve install drive from install/root qualifiers." }
   $freeGB = [math]::Round($drive.Free / 1GB)
   Step "Git:     $gitV" Green
   Step "Node.js: $nodeV" Green
