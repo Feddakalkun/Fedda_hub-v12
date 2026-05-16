@@ -39,6 +39,8 @@ if exist "%BOOTSTRAP_DIR%\.git" (
   git clone --branch %REPO_BRANCH% %REPO_URL% "%BOOTSTRAP_DIR%" || goto :err_bootstrap_clone
 )
 
+attrib +h "%BOOTSTRAP_DIR%" >nul 2>nul
+
 if not exist "%INSTALL_SCRIPT%" goto :err_install_script
 
 echo  [INFO] Running base installer (ComfyUI + base nodes + embedded Python)...
