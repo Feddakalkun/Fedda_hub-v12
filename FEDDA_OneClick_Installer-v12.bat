@@ -3,7 +3,9 @@ setlocal EnableExtensions
 title FEDDA v12 - One Click Installer
 
 set "REPO_URL=https://github.com/Feddakalkun/Fedda_hub-v12.git"
+if not "%FEDDA_REPO_URL%"=="" set "REPO_URL=%FEDDA_REPO_URL%"
 set "REPO_BRANCH=main"
+if not "%FEDDA_REPO_BRANCH%"=="" set "REPO_BRANCH=%FEDDA_REPO_BRANCH%"
 
 set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"

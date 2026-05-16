@@ -33,8 +33,18 @@ function Resolve-NpmCmd {
   if ($candidate) { return $candidate.Source }
   $candidate = Cmd "npm.cmd"
   if ($candidate) { return $candidate.Source }
-  $default = "C:\Program Files\nodejs\npm.cmd"
-  if (Test-Path $default) { return $default }
+  $nodeCmd = Cmd "node"
+  if ($nodeCmd) {
+    try {
+      $nodeDir = Split-Path $nodeCmd.Source -Parent
+      $npmFromNode = Join-Path $nodeDir "npm.cmd"
+      if (Test-Path $npmFromNode) { return $npmFromNode }
+    } catch {}
+  }
+  try {
+    $whereNpm = (& where.exe npm.cmd 2>$null | Select-Object -First 1)
+    if ($whereNpm -and (Test-Path $whereNpm)) { return $whereNpm }
+  } catch {}
   return $null
 }
 
@@ -70,12 +80,20 @@ function Show-SystemCheck {
   Step "SYSTEM CHECK" Cyan
   $gitV = if (Cmd "git") { (& git --version 2>&1) } else { "NOT FOUND" }
   $nodeV = if (Cmd "node") { (& node --version 2>&1) } else { "NOT FOUND" }
-  $npmCmd = Resolve-NpmCmd
-  $npmV = if ($npmCmd) { (& $npmCmd --version 2>&1) } else { "NOT FOUND" }
+  $npmV = "NOT FOUND"
+  try { $npmV = (& cmd /c npm --version 2>&1) } catch {}
   $gpu = Get-GpuProfile
   $ramGB = 0
   try { $ramGB = [math]::Round((Get-CimInstance Win32_OperatingSystem).TotalVisibleMemorySize / 1MB) } catch {}
-  $drive = (Get-Item $Root).PSDrive
+  $drive = $null
+  try {
+    if (Test-Path $InstallRoot) {
+      $drive = (Get-Item $InstallRoot).PSDrive
+    } elseif (Test-Path $Root) {
+      $drive = (Get-Item $Root).PSDrive
+    }
+  } catch {}
+  if (-not $drive) { Fail "Could not resolve install drive from path." }
   $freeGB = [math]::Round($drive.Free / 1GB)
   Step "Git:     $gitV" Green
   Step "Node.js: $nodeV" Green
@@ -201,12 +219,10 @@ function Ensure-BaseNodes {
 
 function Ensure-FrontendDeps {
   $frontendDir = Join-Path $Root "frontend"
-  $npmCmd = Resolve-NpmCmd
-  if (-not $npmCmd) { Fail "npm is required but not found in PATH." }
   if (Test-Path (Join-Path $frontendDir "package.json")) {
     Step "Installing frontend dependencies..." Yellow
     Push-Location $frontendDir
-    & $npmCmd install
+    & cmd /c npm install
     if ($LASTEXITCODE -ne 0) { Pop-Location; Fail "npm install failed in frontend." }
     Pop-Location
     Step "Frontend dependencies installed." Green
