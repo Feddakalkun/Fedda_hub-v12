@@ -3,7 +3,9 @@ setlocal EnableExtensions
 title FEDDA v12 - One Click Installer
 
 set "REPO_URL=https://github.com/Feddakalkun/Fedda_hub-v12.git"
-if not "%FEDDA_REPO_URL%"=="" set "REPO_URL=%FEDDA_REPO_URL%"
+if not "%FEDDA_REPO_URL%"=="" (
+  set "REPO_URL=%FEDDA_REPO_URL%"
+)
 set "REPO_BRANCH=main"
 if not "%FEDDA_REPO_BRANCH%"=="" set "REPO_BRANCH=%FEDDA_REPO_BRANCH%"
 
@@ -14,6 +16,11 @@ set "INSTALL_ROOT=%ROOT%\comfyuifeddafront"
 set "INSTALL_SCRIPT=%BOOTSTRAP_DIR%\scripts\install_base.ps1"
 set "UPDATE_BAT=%ROOT%\FEDDA_Update-v12.bat"
 set "RUN_BAT=%ROOT%\FEDDA_run-v12.bat"
+
+if "%REPO_URL%"=="" goto :err_repo_url
+if "%ROOT%"=="" goto :err_root
+if "%BOOTSTRAP_DIR%"=="" goto :err_bootstrap_dir
+if "%INSTALL_ROOT%"=="" goto :err_install_root
 
 echo.
 echo  =============================================================
@@ -108,6 +115,27 @@ exit /b 1
 
 :err_node
 echo  [ERROR] Node.js not found. Install Node.js 18+ from https://nodejs.org/
+pause
+exit /b 1
+
+:err_repo_url
+echo  [ERROR] REPO_URL resolved empty.
+echo         If FEDDA_REPO_URL env var is set, remove/fix it.
+pause
+exit /b 1
+
+:err_root
+echo  [ERROR] ROOT path resolved empty.
+pause
+exit /b 1
+
+:err_bootstrap_dir
+echo  [ERROR] Bootstrap path resolved empty.
+pause
+exit /b 1
+
+:err_install_root
+echo  [ERROR] Install root path resolved empty.
 pause
 exit /b 1
 
