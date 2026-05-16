@@ -1,0 +1,27 @@
+[
+  {
+    "name": "ComfyUI-Manager",
+    "repo": "https://github.com/Comfy-Org/ComfyUI-Manager.git",
+    "folder": "ComfyUI-Manager"
+  },
+  {
+    "name": "rgthree-comfy",
+    "repo": "https://github.com/rgthree/rgthree-comfy.git",
+    "folder": "rgthree-comfy"
+  },
+  {
+    "name": "ComfyUI-KJNodes",
+    "repo": "https://github.com/kijai/ComfyUI-KJNodes.git",
+    "folder": "ComfyUI-KJNodes"
+  },
+  {
+    "name": "ComfyUI-VideoHelperSuite",
+    "repo": "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git",
+    "folder": "ComfyUI-VideoHelperSuite"
+  },
+  {
+    "name": "ComfyUI-Custom-Scripts",
+    "repo": "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git",
+    "folder": "ComfyUI-Custom-Scripts"
+  }
+]
