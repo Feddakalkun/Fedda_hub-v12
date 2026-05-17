@@ -11,6 +11,7 @@ if ([string]::IsNullOrWhiteSpace($InstallRoot)) {
 $ComfyDir = Join-Path $InstallRoot "ComfyUI"
 $NodesDir = Join-Path $ComfyDir "custom_nodes"
 $NodesConfigPath = Join-Path $Root "config\base_nodes.json"
+$LocalModelListPath = Join-Path $Root "config\model-list.local.json"
 $EmbedDir = Join-Path $InstallRoot "python_embeded"
 $EmbedPy = Join-Path $EmbedDir "python.exe"
 $EmbedPip = Join-Path $EmbedDir "Scripts\pip.exe"
@@ -188,6 +189,59 @@ function Install-TorchStack([string[]]$indexes, [string]$series) {
   Fail "PyTorch CUDA installation failed for this system."
 }
 
+function Get-CudaTagsFromIndexes([string[]]$indexes) {
+  $tags = @()
+  foreach ($idx in $indexes) {
+    if ($idx -match "/whl/(cu\d+)$") {
+      $tags += $Matches[1]
+    }
+  }
+  return $tags | Select-Object -Unique
+}
+
+function Test-TorchStackCompatible([string[]]$indexes) {
+  if (-not (Test-Path $EmbedPy)) { return $false }
+  $cudaTags = Get-CudaTagsFromIndexes $indexes
+  if (-not $cudaTags -or $cudaTags.Count -eq 0) { return $false }
+  $allowedTags = @($cudaTags | ForEach-Object { "+$_" })
+  $pipShow = & $EmbedPy -m pip show torch torchvision torchaudio 2>$null
+  if ($LASTEXITCODE -ne 0 -or -not $pipShow) { return $false }
+
+  $versions = @{}
+  $currentPkg = ""
+  foreach ($line in $pipShow) {
+    if ($line -match '^Name:\s*(.+)$') {
+      $currentPkg = $Matches[1].Trim().ToLowerInvariant()
+      continue
+    }
+    if ($line -match '^Version:\s*(.+)$' -and $currentPkg) {
+      $versions[$currentPkg] = $Matches[1].Trim()
+      $currentPkg = ""
+    }
+  }
+
+  if (-not $versions.ContainsKey("torch")) { return $false }
+  if (-not $versions.ContainsKey("torchvision")) { return $false }
+  if (-not $versions.ContainsKey("torchaudio")) { return $false }
+
+  $torchVersion = $versions["torch"]
+  $visionVersion = $versions["torchvision"]
+  $audioVersion = $versions["torchaudio"]
+
+  $torchOk = $torchVersion.StartsWith("2.6.0")
+  $visionOk = $visionVersion.StartsWith("0.21.0")
+  $audioOk = $audioVersion.StartsWith("2.6.0")
+  $tagOk = $false
+  foreach ($tag in $allowedTags) {
+    if ($torchVersion -like "*$tag*") {
+      $tagOk = $true
+      break
+    }
+  }
+
+  return ($torchOk -and $visionOk -and $audioOk -and $tagOk)
+}
+
 function Ensure-ComfyUi {
   if (-not (Test-Path $InstallRoot)) { New-Item -ItemType Directory -Path $InstallRoot | Out-Null }
   if (-not (Test-Path $ComfyDir)) {
@@ -221,6 +275,50 @@ function Ensure-BaseNodes {
       & git pull --ff-only
       Pop-Location
     }
+  }
+}
+
+function Merge-LocalModelWhitelist {
+  if (-not (Test-Path $LocalModelListPath)) {
+    Step "No local model-list override found, skipping whitelist merge." DarkGray
+    return
+  }
+
+  $managerModelListPath = Join-Path $NodesDir "ComfyUI-Manager\model-list.json"
+  if (-not (Test-Path $managerModelListPath)) {
+    Step "ComfyUI-Manager model-list.json not found yet, skipping whitelist merge." DarkYellow
+    return
+  }
+
+  Step "Merging FEDDA local model whitelist into ComfyUI-Manager..." Yellow
+
+  $localJson = Get-Content $LocalModelListPath -Raw | ConvertFrom-Json
+  $managerJson = Get-Content $managerModelListPath -Raw | ConvertFrom-Json
+
+  if (-not $localJson.models) {
+    Step "Local model list has no models array, skipping merge." DarkYellow
+    return
+  }
+  if (-not $managerJson.models) {
+    $managerJson | Add-Member -NotePropertyName models -NotePropertyValue @()
+  }
+
+  $added = 0
+  foreach ($m in $localJson.models) {
+    $exists = $managerJson.models | Where-Object {
+      $_.filename -eq $m.filename -and $_.save_path -eq $m.save_path -and $_.base -eq $m.base
+    }
+    if (-not $exists) {
+      $managerJson.models += $m
+      $added++
+    }
+  }
+
+  if ($added -gt 0) {
+    $managerJson | ConvertTo-Json -Depth 32 | Set-Content -Path $managerModelListPath -Encoding UTF8
+    Step "Whitelist merge complete: added $added model entries." Green
+  } else {
+    Step "Whitelist merge complete: no new entries needed." Green
   }
 }
 
@@ -262,10 +360,15 @@ if (Test-Path $req) {
 $gpu = Get-GpuProfile
 $torchIndexes = Get-TorchIndexesForSeries $gpu.Series
 Step "Torch fallback order: $($torchIndexes -join ' -> ')" DarkGray
-$selectedTorchIndex = Install-TorchStack -indexes $torchIndexes -series $gpu.Series
-Step "Torch source selected: $selectedTorchIndex" DarkGray
+if (Test-TorchStackCompatible -indexes $torchIndexes) {
+  Step "Torch stack already compatible; skipping reinstall." Green
+} else {
+  $selectedTorchIndex = Install-TorchStack -indexes $torchIndexes -series $gpu.Series
+  Step "Torch source selected: $selectedTorchIndex" DarkGray
+}
 
 Ensure-BaseNodes
+Merge-LocalModelWhitelist
 Ensure-FrontendDeps
 
 Step "Running torch/CUDA smoke test..." Yellow

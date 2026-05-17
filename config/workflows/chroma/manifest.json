@@ -1,0 +1,89 @@
+{
+  "id": "chroma-txt2img-v1",
+  "name": "Chroma TXT2IMG + Upscale + FaceDetail",
+  "category": "image",
+  "cardImage": "/card-images/chroma.png",
+  "workflowFile": "config/workflows/chroma/workflow.json",
+  "requiredNodes": [
+    {
+      "name": "ComfyUI-GGUF",
+      "repo": "https://github.com/city96/ComfyUI-GGUF.git"
+    },
+    {
+      "name": "ComfyUI-Impact-Pack",
+      "repo": "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+    },
+    {
+      "name": "ComfyUI-Impact-Subpack",
+      "repo": "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
+    },
+    {
+      "name": "ComfyUI_essentials",
+      "repo": "https://github.com/cubiq/ComfyUI_essentials.git"
+    },
+    {
+      "name": "ComfyUI-KJNodes",
+      "repo": "https://github.com/kijai/ComfyUI-KJNodes.git"
+    },
+    {
+      "name": "ComfyUI_SaveImageWithMetaDataUniversal",
+      "repo": "https://github.com/xxmjskxx/ComfyUI_SaveImageWithMetaDataUniversal.git"
+    }
+  ],
+  "requiredModels": [
+    {
+      "filename": "chroma-unlocked-v48-detail-calibrated-Q4_0.gguf",
+      "save_path": "unet",
+      "base": "Chroma",
+      "url": "https://huggingface.co/silveroxides/Chroma-GGUF/resolve/main/chroma-unlocked-v48-detail-calibrated/chroma-unlocked-v48-detail-calibrated-Q4_0.gguf"
+    },
+    {
+      "filename": "flan_t5_xxl_TE-only_FP8.safetensors",
+      "save_path": "clip",
+      "base": "Chroma",
+      "url": "https://huggingface.co/easygoing0114/flan-t5-xxl-fused/resolve/main/flan_t5_xxl_TE-only_FP8.safetensors"
+    },
+    {
+      "filename": "ae.safetensors",
+      "save_path": "vae/FLUX1",
+      "base": "FLUX.1"
+    },
+    {
+      "filename": "fluxRefiner_v11.safetensors",
+      "save_path": "checkpoints",
+      "base": "FLUX.1",
+      "url": "https://civitai.com/api/download/models/813603"
+    },
+    {
+      "filename": "4x-UltraSharp.pth",
+      "save_path": "default",
+      "base": "upscale"
+    },
+    {
+      "filename": "4x_NMKD-Siax_200k.pth",
+      "save_path": "default",
+      "base": "upscale"
+    },
+    {
+      "filename": "sam_vit_b_01ec64.pth",
+      "save_path": "sams",
+      "base": "SAM"
+    },
+    {
+      "filename": "face_yolov8m.pt",
+      "save_path": "ultralytics/bbox",
+      "base": "Ultralytics"
+    },
+    {
+      "filename": "Eyeful_v2-Paired.pt",
+      "save_path": "ultralytics/bbox",
+      "base": "Ultralytics",
+      "url": "https://huggingface.co/Bryan32/Adetailer/resolve/main/Eyeful_v2-Paired.pt"
+    }
+  ],
+  "postInstallChecks": [
+    "ComfyUI custom nodes import without missing class errors",
+    "Required models resolve in workflow loaders",
+    "Workflow JSON opens without node-not-found popups"
+  ]
+}

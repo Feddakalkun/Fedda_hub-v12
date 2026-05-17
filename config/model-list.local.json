@@ -1,0 +1,44 @@
+{
+  "models": [
+    {
+      "name": "Chroma GGUF Q4_0",
+      "type": "diffusion_models",
+      "base": "Chroma",
+      "save_path": "unet",
+      "description": "Chroma unlocked v48 detail calibrated GGUF",
+      "reference": "https://huggingface.co/silveroxides/Chroma-GGUF",
+      "filename": "chroma-unlocked-v48-detail-calibrated-Q4_0.gguf",
+      "url": "https://huggingface.co/silveroxides/Chroma-GGUF/resolve/main/chroma-unlocked-v48-detail-calibrated/chroma-unlocked-v48-detail-calibrated-Q4_0.gguf"
+    },
+    {
+      "name": "FLAN T5 XXL TE-only FP8",
+      "type": "text_encoders",
+      "base": "Chroma",
+      "save_path": "clip",
+      "description": "Text encoder for Chroma GGUF workflows",
+      "reference": "https://huggingface.co/easygoing0114/flan-t5-xxl-fused",
+      "filename": "flan_t5_xxl_TE-only_FP8.safetensors",
+      "url": "https://huggingface.co/easygoing0114/flan-t5-xxl-fused/resolve/main/flan_t5_xxl_TE-only_FP8.safetensors"
+    },
+    {
+      "name": "fluxRefiner v1.1",
+      "type": "checkpoints",
+      "base": "FLUX.1",
+      "save_path": "checkpoints",
+      "description": "Flux refiner for img2img detail pass",
+      "reference": "https://civitai.com/models/716879/flux-refiner",
+      "filename": "fluxRefiner_v11.safetensors",
+      "url": "https://civitai.com/api/download/models/813603"
+    },
+    {
+      "name": "Eyeful_v2-Paired (bbox)",
+      "type": "ultralytics",
+      "base": "Ultralytics",
+      "save_path": "ultralytics/bbox",
+      "description": "Eye-focused detector for Impact FaceDetailer pass",
+      "reference": "https://huggingface.co/Bryan32/Adetailer",
+      "filename": "Eyeful_v2-Paired.pt",
+      "url": "https://huggingface.co/Bryan32/Adetailer/resolve/main/Eyeful_v2-Paired.pt"
+    }
+  ]
+}

@@ -10,9 +10,34 @@
     "folder": "rgthree-comfy"
   },
   {
+    "name": "ComfyUI-GGUF",
+    "repo": "https://github.com/city96/ComfyUI-GGUF.git",
+    "folder": "ComfyUI-GGUF"
+  },
+  {
     "name": "ComfyUI-KJNodes",
     "repo": "https://github.com/kijai/ComfyUI-KJNodes.git",
     "folder": "ComfyUI-KJNodes"
+  },
+  {
+    "name": "ComfyUI-Impact-Pack",
+    "repo": "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git",
+    "folder": "ComfyUI-Impact-Pack"
+  },
+  {
+    "name": "ComfyUI-Impact-Subpack",
+    "repo": "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git",
+    "folder": "ComfyUI-Impact-Subpack"
+  },
+  {
+    "name": "ComfyUI_essentials",
+    "repo": "https://github.com/cubiq/ComfyUI_essentials.git",
+    "folder": "ComfyUI_essentials"
+  },
+  {
+    "name": "ComfyUI_SaveImageWithMetaDataUniversal",
+    "repo": "https://github.com/xxmjskxx/ComfyUI_SaveImageWithMetaDataUniversal.git",
+    "folder": "ComfyUI_SaveImageWithMetaDataUniversal"
   },
   {
     "name": "ComfyUI-VideoHelperSuite",

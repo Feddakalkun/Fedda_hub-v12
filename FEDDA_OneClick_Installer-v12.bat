@@ -65,6 +65,40 @@ echo if "%%ROOT_DIR:~-1%%"=="\" set "ROOT_DIR=%%ROOT_DIR:~0,-1%%"
 echo set "BOOTSTRAP_DIR=%%ROOT_DIR%%\_fedda_hub_v12_repo"
 echo set "INSTALL_SCRIPT=%%BOOTSTRAP_DIR%%\scripts\install_base.ps1"
 echo set "INSTALL_ROOT=%%ROOT_DIR%%\comfyuifeddafront"
+echo set "BOOTSTRAP_REMOTE=https://github.com/Feddakalkun/Fedda_hub-v12.git"
+echo if not exist "%%BOOTSTRAP_DIR%%\.git" ^(
+echo   echo [ERROR] Missing bootstrap git repo:
+echo   echo         %%BOOTSTRAP_DIR%%
+echo   echo [INFO] Run FEDDA_OneClick_Installer-v12.bat once to bootstrap.
+echo   pause
+echo   exit /b 1
+echo ^)
+echo echo [INFO] Updating bootstrap repo...
+echo git -C "%%BOOTSTRAP_DIR%%" remote set-url origin "%%BOOTSTRAP_REMOTE%%" ^>nul 2^>nul
+echo git -C "%%BOOTSTRAP_DIR%%" fetch origin main
+echo if not "%%ERRORLEVEL%%"=="0" ^(
+echo   echo [ERROR] Failed to fetch bootstrap repo.
+echo   pause
+echo   exit /b 1
+echo ^)
+echo git -C "%%BOOTSTRAP_DIR%%" checkout main
+echo if not "%%ERRORLEVEL%%"=="0" ^(
+echo   echo [ERROR] Failed to checkout bootstrap main.
+echo   pause
+echo   exit /b 1
+echo ^)
+echo git -C "%%BOOTSTRAP_DIR%%" reset --hard origin/main
+echo if not "%%ERRORLEVEL%%"=="0" ^(
+echo   echo [ERROR] Failed to sync bootstrap to origin/main.
+echo   pause
+echo   exit /b 1
+echo ^)
+echo git -C "%%BOOTSTRAP_DIR%%" clean -fd
+echo if not "%%ERRORLEVEL%%"=="0" ^(
+echo   echo [ERROR] Failed to clean bootstrap working tree.
+echo   pause
+echo   exit /b 1
+echo ^)
 echo if not exist "%%INSTALL_SCRIPT%%" ^(
 echo   echo [ERROR] Missing bootstrap installer script:
 echo   echo         %%INSTALL_SCRIPT%%
@@ -80,7 +114,13 @@ echo @echo off
 echo setlocal EnableExtensions
 echo set "ROOT_DIR=%%~dp0"
 echo if "%%ROOT_DIR:~-1%%"=="\" set "ROOT_DIR=%%ROOT_DIR:~0,-1%%"
+echo set "COMFY_DIR=%%ROOT_DIR%%\comfyuifeddafront\ComfyUI"
+echo set "EMBED_PY=%%ROOT_DIR%%\comfyuifeddafront\python_embeded\python.exe"
 echo set "FRONTEND_DIR=%%ROOT_DIR%%\_fedda_hub_v12_repo\frontend"
+echo if exist "%%EMBED_PY%%" if exist "%%COMFY_DIR%%\main.py" ^(
+echo   echo [INFO] Starting ComfyUI...
+echo   start "FEDDA ComfyUI" cmd /k ""%%EMBED_PY%%" "%%COMFY_DIR%%\main.py" --windows-standalone-build --port 8199"
+echo ^)
 echo if not exist "%%FRONTEND_DIR%%\package.json" ^(
 echo   echo [ERROR] Missing frontend package.json at:
 echo   echo         %%FRONTEND_DIR%%
@@ -91,6 +131,16 @@ echo pushd "%%FRONTEND_DIR%%" ^|^| ^(
 echo   echo [ERROR] Could not enter frontend folder.
 echo   pause
 echo   exit /b 1
+echo ^)
+echo if not exist "%%FRONTEND_DIR%%\node_modules\.bin\vite.cmd" ^(
+echo   echo [INFO] Frontend dependencies missing. Installing...
+echo   call npm install
+echo   if not "%%ERRORLEVEL%%"=="0" ^(
+echo     echo [ERROR] npm install failed.
+echo     set "EXITCODE=%%ERRORLEVEL%%"
+echo     popd
+echo     exit /b %%EXITCODE%%
+echo   ^)
 echo ^)
 echo call npm run dev
 echo set "EXITCODE=%%ERRORLEVEL%%"
