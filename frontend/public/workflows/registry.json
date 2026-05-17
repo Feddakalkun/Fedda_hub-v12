@@ -1,0 +1,10 @@
+{
+  "workflows": [
+    {
+      "id": "chroma-txt2img-v1",
+      "name": "Chroma TXT2IMG + Upscale + FaceDetail",
+      "category": "image",
+      "manifest": "/workflows/chroma/manifest.json"
+    }
+  ]
+}
